@@ -41,3 +41,12 @@ class Response(BaseModel):
 	"""
 	powerplantName: str
 	p: float
+
+	def serialize(self) -> Dict[str, float]:
+		"""
+		Serialize the Response object to a dictionary.
+		"""
+		return {
+			'powerplantName': self.powerplantName,
+			'p': self.p
+		}
