@@ -1,8 +1,9 @@
 # powerplant-coding-challenge
 
 1. Activate virtual enviroment:  `python3 -m venv venv && source venv/bin/activte`
-2. Install all the dependencies: `pip3 install -r requirements.txt`
-3. Run server: `python3 -m api.app`
+2. Export the enviroment variables: `source .env`
+3. Install all the dependencies: `pip3 install -r requirements.txt`
+4. Run server: `python3 -m api.app`
 
 ### Useful commands
 
