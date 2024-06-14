@@ -9,7 +9,8 @@ def parsePayload(data: dict) -> Payload:
 		powerplants.append(Powerplant(**powerplant))
 	
 	fuels = []
-	for fuel in data.pop("fuels"):
-		fuels.append(Fuel(**fuel))
+	fuelsData = data.pop("fuels")
+	for fuelName, fuelValue in fuelsData.items():
+		fuels.append(Fuel(type=fuelName, value=fuelValue))
 
 	return Payload(**data, powerplants=powerplants, fuels=fuels)

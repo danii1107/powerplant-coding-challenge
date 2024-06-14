@@ -1,6 +1,19 @@
-from models import Response, Payload, Powerplant
+from models import Response, Payload, Fuel, Powerplant
 
-def meritOrderKey(powerplant: Powerplant):
+def getFuelValue(fuels: list[Fuel], fuelType: str) -> float:
+	"""
+	After creating the Fuel model so we don't process the full payload in meritOrder function, we can get the fuel value from the fuels list.
+
+	Returns the value of the fuel from the fuels list.
+	"""
+	for fuel in fuels:
+		if fuel.type == fuelType:
+			if fuelType == 'wind(%)':
+				return fuel.value / 100
+			return fuel.value
+	return 0
+
+def meritOrderKey(powerplant: Powerplant, fuels: list[Fuel]):
 	"""
 	As we need extra condtions for ordering the powerplants list, we can't do it with a simple lambda function.
 	We need to get the payload here, so we can get the fuels and the wind(%) from it. Definetely, it is useful to have a Fuel model.
@@ -11,9 +24,9 @@ def meritOrderKey(powerplant: Powerplant):
 		return powerplant.pmax
 	else:
 		fuelType = 'gas(euro/MWh)' if powerplant.type == 'gasfired' else 'kerosine(euro/MWh)'
-		return powerplant.fuels[fuelType]/powerplant.efficiency
+		return getFuelValue(fuels=fuels, fuelType=fuelType) / powerplant.efficiency
 
-def meritOrder(powerplants) -> list:
+def meritOrder(payload: Payload) -> list:
 	"""
 	Started ordering powerplants by efficiency, but it won't be enough to solve the unit commitment problem because we will need
 	to consider the cost and the % wind of each powerplant as well. A gasfired pp with 0.2 efficiency and 10 euro/MWh will be in a higher position than
@@ -30,7 +43,7 @@ def meritOrder(powerplants) -> list:
 	If gas is at 6 euro/MWh and if the efficiency of the powerplant is  50% (i.e. 2 units of gas will generate one unit of electricity),
 	the cost of generating 1 MWh is 12 euro. Same for kerosine. For %wind, 25% wind during an hour, a wind-turbine with a Pmax of 4 MW will generate 1MWh of energy.
 	"""
-	return sorted(powerplants, key=meritOrderKey)
+	return sorted(payload.powerplants, key= lambda powerplant: meritOrderKey(powerplant, payload.fuels))
 	
 
 def solve(payload: dict) -> list:
@@ -43,12 +56,12 @@ def solve(payload: dict) -> list:
 	Solves the unit commitment problem.
 	"""
 	response = []
-	sortedPowerplants = meritOrder(payload.powerplants)
+	sortedPowerplants = meritOrder(payload)
 	generatedLoad = 0
 	while generatedLoad < payload.load:
 		for powerplant in sortedPowerplants:
 			if powerplant.type == 'windturbine':
-				partialLoad = powerplant.pmax * payload.fuels['wind(%)']/100
+				partialLoad = powerplant.pmax * getFuelValue(fuels=payload.fuels, fuelType='wind(%)')
 				generatedLoad += partialLoad
 				response.append(Response(powerplantName=powerplant.name, p=partialLoad))
 			else:
