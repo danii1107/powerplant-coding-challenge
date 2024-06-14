@@ -1,4 +1,4 @@
-from models import Payload, Powerplant
+from models import Payload, Powerplant, Fuel
 
 def parsePayload(data: dict) -> Payload:
 	"""
@@ -8,4 +8,8 @@ def parsePayload(data: dict) -> Payload:
 	for powerplant in data.pop("powerplants"):
 		powerplants.append(Powerplant(**powerplant))
 	
-	return Payload(**data, powerplants=powerplants)
+	fuels = []
+	for fuel in data.pop("fuels"):
+		fuels.append(Fuel(**fuel))
+
+	return Payload(**data, powerplants=powerplants, fuels=fuels)

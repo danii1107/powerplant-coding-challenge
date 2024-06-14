@@ -18,6 +18,17 @@ class Powerplant(BaseModel):
 	pmin: int
 	pmax: int
 
+class Fuel(BaseModel):
+	"""
+	Represents a fuel or a % of wind.
+	
+	Attributes:
+		@type - the type of the fuel (gas(euro/MWh), kerosine(euro/MWh) or wind(%))
+		@price - the price of the fuel or the % of wind.
+	"""
+	type: str
+	value: float
+
 class Payload(BaseModel):
 	"""
 	Represents the full request data.
@@ -28,7 +39,7 @@ class Payload(BaseModel):
 		@powerplants - a list which describes the powerplants at disposal to generate the demanded load.
 	"""
 	load: int
-	fuels: Dict[str, float]
+	fuels: List[Fuel]
 	powerplants: List[Powerplant]
 
 class Response(BaseModel):
