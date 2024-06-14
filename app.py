@@ -15,9 +15,15 @@ def productionPlan():
 	"""
 	try:
 		data = request.get_json()
-		payload = parsePayload(data)	
+		payload = parsePayload(data)
+		if payload is None:
+			return jsonify({'error': 'Payload failure'}), 400	
 		responses = solve(payload)
+		if responses.__len__ == 0:
+			return jsonify({'error': 'We can not reach a solution with the given data'}), 200
 		serializedResponses = [r.serialize() for r in responses]
+		if serializedResponses[0]['name'] == 'error':
+			return jsonify(serializedResponses), 500	
 		return jsonify(serializedResponses), 200
 	except Exception as e:
 		# If its not a POST return Bad request

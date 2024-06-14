@@ -18,7 +18,7 @@ def meritOrderKey(powerplant: Powerplant, fuels: list[Fuel]):
 	As we need extra condtions for ordering the powerplants list, we can't do it with a simple lambda function.
 	We need to get the payload here, so we can get the fuels and the wind(%) from it. Definetely, it is useful to have a Fuel model.
 	After the 1st solution, i realized that this function is not working as expected, we should prioritize the windturbines.
-
+	
 	Returns the key to sort the powerplants by its merit-order.
 	"""
 	if powerplant.type == 'windturbine':
@@ -61,31 +61,41 @@ def solve(payload: dict) -> list:
 	Solves the unit commitment problem.
 	"""
 	response = []
-	sortedPowerplants = meritOrder(payload)
-	generatedLoad = 0
-	powerplantIndex = 0
+
+	try:
+		sortedPowerplants = meritOrder(payload)
+		generatedLoad = 0
+		powerplantIndex = 0
 	
-	while generatedLoad <= payload.load and powerplantIndex < len(sortedPowerplants):
-		partialLoad = 0
-		powerplant = sortedPowerplants[powerplantIndex]
-		
-		# We avoid switching on a powerplant if we don't need to or if the pmin is higher than the remaining load
-		if generatedLoad == payload.load or powerplant.pmin > payload.load - generatedLoad:
+		while generatedLoad <= payload.load and powerplantIndex < len(sortedPowerplants):
 			partialLoad = 0
-		elif powerplant.type == "windturbine":
-			partialLoad = powerplant.pmax * getFuelValue(fuels=payload.fuels, fuelType='wind(%)')
-		else:
-			partialLoad = powerplant.pmax
-		
-		# If we overpass the load, partialLod will not be pmax but the remaining load
-		if generatedLoad + partialLoad > payload.load:
-				partialLoad = payload.load - generatedLoad
-		
-		partialLoad = round(partialLoad * 10) / 10 # 0.1 Requirement
-		generatedLoad += partialLoad
-		
-		# Append even if p is zero so we have the full responses list
-		response.append(Response(powerplantName=powerplant.name, p=partialLoad))
-		powerplantIndex += 1
+			powerplant = sortedPowerplants[powerplantIndex]
+			
+			# We avoid switching on a powerplant if we don't need to or if the pmin is higher than the remaining load
+			if generatedLoad == payload.load or powerplant.pmin > payload.load - generatedLoad:
+				partialLoad = 0
+			elif powerplant.type == "windturbine":
+				partialLoad = powerplant.pmax * getFuelValue(fuels=payload.fuels, fuelType='wind(%)')
+			else:
+				partialLoad = powerplant.pmax
+			
+			# If we overpass the load, partialLod will not be pmax but the remaining load
+			if generatedLoad + partialLoad > payload.load:
+					partialLoad = payload.load - generatedLoad
+			
+			partialLoad = round(partialLoad * 10) / 10 # 0.1 Requirement
+			generatedLoad += partialLoad
+			
+			# Append even if p is zero so we have the full responses list
+			response.append(Response(powerplantName=powerplant.name, p=partialLoad))
+			powerplantIndex += 1
+
+	except Exception as e:
+		# If we have an error, we return an empty list
+		return [Response(powerplantName='error', p=0.0)]
 	
+	# If the generated load is different from the payload load, we can't reach the load with the powerplants list
+	if generatedLoad != payload.load:
+		return []
+
 	return response

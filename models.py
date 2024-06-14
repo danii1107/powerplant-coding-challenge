@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import List, Dict
 
 class Powerplant(BaseModel):
@@ -23,7 +23,7 @@ class Fuel(BaseModel):
 	Represents a fuel or a % of wind.
 	
 	Attributes:
-		@type - the type of the fuel (gas(euro/MWh), kerosine(euro/MWh) or wind(%))
+		@type - the type of the fuel (gas(euro/MWh), kerosine(euro/MWh) or wind(%)) or the emission of the powerplant (CO2(euro/ton)).
 		@price - the price of the fuel or the % of wind.
 	"""
 	type: str
@@ -35,7 +35,7 @@ class Payload(BaseModel):
 	
 	Attributes:
 		@load - the amount of energy that needs to be generated during one hour.
-		@fuels - a dictionary which stores the type os fuel and its price for gas and kerosine. For wind, it stores the percentage of wind
+		@fuels - a list which stores the type os fuel and its price for gas and kerosine. For wind, it stores the percentage of wind
 		@powerplants - a list which describes the powerplants at disposal to generate the demanded load.
 	"""
 	load: int
@@ -53,10 +53,12 @@ class Response(BaseModel):
 	powerplantName: str
 	p: float
 
-	def serialize(self) -> Dict[str, float]:
+	def serialize(self) -> Dict[str, any]:
 		"""
 		Serialize the Response object to a dictionary.
 		"""
+		if self.powerplantName == 'error':
+			return {'error': 'An error occured while executing.'}
 		return {
 			'name': self.powerplantName,
 			'p': self.p
