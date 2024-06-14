@@ -52,20 +52,24 @@ def solve(payload: dict) -> list:
 	is not well-implemented, the solve function should switch on powerplant on its merit order until the load is reached, we don't need extra comparisons here.
 	With the well-implemented meritorder, we can just switch on the powerplants in the merit order until the load is reached, because of the thermal efficiency,
 	the load generated will be: efficiency * pmax for gas/kerosine powerplants and %wind * pmax for windturbines.
+	After the 1st solution and improving merit orders functions, i had to update this function so it iterates only once over the powerplants list instead of
+	iterating over it every iteration of the while loop. We can just iterate over the powerplants list once and switch on the powerplants in the merit order until the load is reached.
 	
 	Solves the unit commitment problem.
 	"""
 	response = []
 	sortedPowerplants = meritOrder(payload)
 	generatedLoad = 0
-	while generatedLoad < payload.load:
-		for powerplant in sortedPowerplants:
-			if powerplant.type == 'windturbine':
-				partialLoad = powerplant.pmax * getFuelValue(fuels=payload.fuels, fuelType='wind(%)')
-				generatedLoad += partialLoad
-				response.append(Response(powerplantName=powerplant.name, p=partialLoad))
-			else:
-				partialLoad = powerplant.pmax * powerplant.efficiency
-				generatedLoad +=  partialLoad
-				response.append(Response(powerplantName=powerplant.name, p=partialLoad))
+	powerplantIndex = 0
+	while generatedLoad < payload.load and powerplantIndex < len(sortedPowerplants):
+		partialLoad = 0
+		powerplant = sortedPowerplants[powerplantIndex]
+		if powerplant.type == 'windturbine':
+			partialLoad = powerplant.pmax * getFuelValue(fuels=payload.fuels, fuelType='wind(%)')
+			generatedLoad += partialLoad
+		else:
+			partialLoad = powerplant.pmax * powerplant.efficiency
+			generatedLoad +=  partialLoad
+		response.append(Response(powerplantName=powerplant.name, p=partialLoad))
+		powerplantIndex += 1
 	return response
