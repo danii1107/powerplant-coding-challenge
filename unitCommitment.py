@@ -54,22 +54,33 @@ def solve(payload: dict) -> list:
 	the load generated will be: efficiency * pmax for gas/kerosine powerplants and %wind * pmax for windturbines.
 	After the 1st solution and improving merit orders functions, i had to update this function so it iterates only once over the powerplants list instead of
 	iterating over it every iteration of the while loop. We can just iterate over the powerplants list once and switch on the powerplants in the merit order until the load is reached.
-	
+	After the 2nd solution, i had to improve the loop conditions so non swithced on powerplants are not considered in the generated load and their p value is zero. Also, i 
+	was wrongly considering gasfired and turbojets production was efficiency*pmax instead of pmax, i had to fix this as well.
+
 	Solves the unit commitment problem.
 	"""
 	response = []
 	sortedPowerplants = meritOrder(payload)
 	generatedLoad = 0
 	powerplantIndex = 0
-	while generatedLoad < payload.load and powerplantIndex < len(sortedPowerplants):
+	
+	while generatedLoad <= payload.load and powerplantIndex < len(sortedPowerplants):
 		partialLoad = 0
 		powerplant = sortedPowerplants[powerplantIndex]
-		if powerplant.type == 'windturbine':
+		
+		if generatedLoad == payload.load:
+			partialLoad = 0
+		elif powerplant.type == "windturbine":
 			partialLoad = powerplant.pmax * getFuelValue(fuels=payload.fuels, fuelType='wind(%)')
-			generatedLoad += partialLoad
 		else:
-			partialLoad = powerplant.pmax * powerplant.efficiency
-			generatedLoad +=  partialLoad
+			partialLoad = powerplant.pmax
+		
+		if generatedLoad + partialLoad > payload.load:
+				partialLoad = payload.load - generatedLoad
+		
+		generatedLoad += partialLoad
+		
 		response.append(Response(powerplantName=powerplant.name, p=partialLoad))
 		powerplantIndex += 1
+	
 	return response
