@@ -58,6 +58,6 @@ class Response(BaseModel):
 		Serialize the Response object to a dictionary.
 		"""
 		return {
-			'powerplantName': self.powerplantName,
+			'name': self.powerplantName,
 			'p': self.p
 		}

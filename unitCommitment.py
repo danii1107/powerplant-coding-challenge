@@ -17,14 +17,15 @@ def meritOrderKey(powerplant: Powerplant, fuels: list[Fuel]):
 	"""
 	As we need extra condtions for ordering the powerplants list, we can't do it with a simple lambda function.
 	We need to get the payload here, so we can get the fuels and the wind(%) from it. Definetely, it is useful to have a Fuel model.
+	After the 1st solution, i realized that this function is not working as expected, we should prioritize the windturbines.
 
 	Returns the key to sort the powerplants by its merit-order.
 	"""
 	if powerplant.type == 'windturbine':
-		return powerplant.pmax
+		return powerplant.efficiency, powerplant.pmax
 	else:
 		fuelType = 'gas(euro/MWh)' if powerplant.type == 'gasfired' else 'kerosine(euro/MWh)'
-		return getFuelValue(fuels=fuels, fuelType=fuelType) / powerplant.efficiency
+		return powerplant.efficiency, getFuelValue(fuels=fuels, fuelType=fuelType) / powerplant.efficiency
 
 def meritOrder(payload: Payload) -> list:
 	"""
@@ -43,8 +44,7 @@ def meritOrder(payload: Payload) -> list:
 	If gas is at 6 euro/MWh and if the efficiency of the powerplant is  50% (i.e. 2 units of gas will generate one unit of electricity),
 	the cost of generating 1 MWh is 12 euro. Same for kerosine. For %wind, 25% wind during an hour, a wind-turbine with a Pmax of 4 MW will generate 1MWh of energy.
 	"""
-	return sorted(payload.powerplants, key= lambda powerplant: meritOrderKey(powerplant, payload.fuels))
-	
+	return sorted(payload.powerplants, key= lambda powerplant: meritOrderKey(powerplant, payload.fuels), reverse=True)
 
 def solve(payload: dict) -> list:
 	"""
