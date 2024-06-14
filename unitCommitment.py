@@ -68,6 +68,7 @@ def solve(payload: dict) -> list:
 		partialLoad = 0
 		powerplant = sortedPowerplants[powerplantIndex]
 		
+		# We avoid switching on a powerplant if we don't need to
 		if generatedLoad == payload.load:
 			partialLoad = 0
 		elif powerplant.type == "windturbine":
@@ -75,11 +76,14 @@ def solve(payload: dict) -> list:
 		else:
 			partialLoad = powerplant.pmax
 		
+		# If we overpass the load, partialLod will not be pmax but the remaining load
 		if generatedLoad + partialLoad > payload.load:
 				partialLoad = payload.load - generatedLoad
 		
+		partialLoad = round(partialLoad * 10) / 10 # 0.1 Requirement
 		generatedLoad += partialLoad
 		
+		# Append even if p is zero so we have the full responses list
 		response.append(Response(powerplantName=powerplant.name, p=partialLoad))
 		powerplantIndex += 1
 	
