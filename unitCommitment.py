@@ -56,7 +56,8 @@ def solve(payload: dict) -> list:
 	iterating over it every iteration of the while loop. We can just iterate over the powerplants list once and switch on the powerplants in the merit order until the load is reached.
 	After the 2nd solution, i had to improve the loop conditions so non swithced on powerplants are not considered in the generated load and their p value is zero. Also, i 
 	was wrongly considering gasfired and turbojets production was efficiency*pmax instead of pmax, i had to fix this as well.
-
+	After adding the 0.1 requirement and the pmin condition we get the 3rd solution, partially correct, we have to implement error management
+	
 	Solves the unit commitment problem.
 	"""
 	response = []
@@ -68,8 +69,8 @@ def solve(payload: dict) -> list:
 		partialLoad = 0
 		powerplant = sortedPowerplants[powerplantIndex]
 		
-		# We avoid switching on a powerplant if we don't need to
-		if generatedLoad == payload.load:
+		# We avoid switching on a powerplant if we don't need to or if the pmin is higher than the remaining load
+		if generatedLoad == payload.load or powerplant.pmin > payload.load - generatedLoad:
 			partialLoad = 0
 		elif powerplant.type == "windturbine":
 			partialLoad = powerplant.pmax * getFuelValue(fuels=payload.fuels, fuelType='wind(%)')

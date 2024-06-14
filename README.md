@@ -14,3 +14,5 @@
 - 1st solution: [{"p":243.8,"powerplantName":"gasfiredbig1"},{"p":243.8,"powerplantName":"gasfiredbig2"},{"p":21.599999999999998,"powerplantName":"windpark2"},{"p":77.7,"powerplantName":"gasfiredsomewhatsmaller"},{"p":90.0,"powerplantName":"windpark1"},{"p":4.8,"powerplantName":"tj1"},{"p":243.8,"powerplantName":"gasfiredbig1"},{"p":243.8,"powerplantName":"gasfiredbig2"},{"p":21.599999999999998,"powerplantName":"windpark2"},{"p":77.7,"powerplantName":"gasfiredsomewhatsmaller"},{"p":90.0,"powerplantName":"windpark1"},{"p":4.8,"powerplantName":"tj1"}]
 
 - 2nd solution: [{"name":"windpark1","p":90.0},{"name":"windpark2","p":21.599999999999998},{"name":"gasfiredbig1","p":243.8},{"name":"gasfiredbig2","p":243.8},{"name":"gasfiredsomewhatsmaller","p":77.7},{"name":"tj1","p":4.8}]
+
+- 3rd and correct solution: [{"name":"windpark1","p":90.0},{"name":"windpark2","p":21.6},{"name":"gasfiredbig1","p":460.0},{"name":"gasfiredbig2","p":338.4},{"name":"gasfiredsomewhatsmaller","p":0.0},{"name":"tj1","p":0.0}]
